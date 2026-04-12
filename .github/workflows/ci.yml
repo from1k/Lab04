@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  linux-gcc:
+    runs-on: ubuntu-latest
+    name: Linux (gcc)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake g++
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_CXX_COMPILER=g++
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Show build tree
+        run: find build -type f
+
+      - name: Run hello_world
+        run: find build -type f -name "hello_world" -executable -exec {} \;
+
+      - name: Run solver
+        run: find build -type f -name "solver" -executable -exec {} \;
+
+  linux-clang:
+    runs-on: ubuntu-latest
+    name: Linux (clang)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake clang
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_CXX_COMPILER=clang++
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Show build tree
+        run: find build -type f
+
+      - name: Run hello_world
+        run: find build -type f -name "hello_world" -executable -exec {} \;
+
+      - name: Run solver
+        run: find build -type f -name "solver" -executable -exec {} \;
+
+  windows-msvc:
+    runs-on: windows-latest
+    name: Windows (MSVC)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Show build tree
+        run: Get-ChildItem -Recurse build
+
+      - name: Run hello_world
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse build -Filter hello_world.exe | Select-Object -First 1 | ForEach-Object { & $_.FullName }
+
+      - name: Run solver
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse build -Filter solver.exe | Select-Object -First 1 | ForEach-Object { & $_.FullName }
