@@ -8,43 +8,28 @@ on:
 
 jobs:
 
-  linux-gcc:
+  linux:
     runs-on: ubuntu-latest
-    name: Linux (gcc)
+    name: Linux (${{ matrix.compiler }})
+
+    strategy:
+      matrix:
+        compiler: [g++, clang++]
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake g++
+        run: |
+          sudo apt-get update
+          if [ "${{ matrix.compiler }}" = "g++" ]; then
+            sudo apt-get install -y cmake g++
+          else
+            sudo apt-get install -y cmake clang
+          fi
 
       - name: Configure
-        run: cmake -B build -DCMAKE_CXX_COMPILER=g++
-
-      - name: Build
-        run: cmake --build build
-
-      - name: Show build tree
-        run: find build -type f
-
-      - name: Run hello_world
-        run: find build -type f -name "hello_world" -executable -exec {} \;
-
-      - name: Run solver
-        run: find build -type f -name "solver" -executable -exec {} \;
-
-  linux-clang:
-    runs-on: ubuntu-latest
-    name: Linux (clang)
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake clang
-
-      - name: Configure
-        run: cmake -B build -DCMAKE_CXX_COMPILER=clang++
+        run: cmake -B build -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
 
       - name: Build
         run: cmake --build build
